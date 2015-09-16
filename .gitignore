@@ -46,3 +46,9 @@ Temporary Items
 *.idb
 *.ilk
 *.log
+*.exe
+*.unsuccessfulbuild
+Debug/Deque.pdb
+*.obj
+Deque/Debug/Deque.lastbuildstate
+*.pdb
