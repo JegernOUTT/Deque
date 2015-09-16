@@ -29,8 +29,11 @@ Deque<T1>::Deque(long elCnt)
 {
 	elementCount = elCnt;
 	memAlloc = new T1[elementCount * 2];
-	head = memAlloc + ((sizeof(T1) * elementCount) / 2);
+	memset(memAlloc, 0, sizeof(T1) * elementCount * 2);
+	head = (T1 *)memAlloc;
+	head += elementCount;
 	back = head;
+
 	cout << memAlloc << "  " << head << "  " << back << endl; 
 }
 
@@ -38,6 +41,15 @@ template <class T1>
 Deque<T1>::~Deque(void)
 {
 	delete memAlloc;
+}
+
+template <class T1>
+bool_t Deque<T1>::isEmpty()
+{
+	if (head == back)
+		return true_t;
+	else
+		return false_t;
 }
 
 #endif //_DEQUE
