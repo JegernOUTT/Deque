@@ -1,11 +1,12 @@
 #include <iostream>
 #include "Deque.h"
+#include "DequeTests.h"
 
 using namespace std;
 
 int main()
 {
-	Deque<int> deq(5);
+	TestDeque<TestClass> testDeque;
 
 	getchar();
 }
