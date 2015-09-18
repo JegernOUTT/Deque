@@ -52,3 +52,6 @@ Debug/Deque.pdb
 *.obj
 Deque/Debug/Deque.lastbuildstate
 *.pdb
+*.opensdf
+Deque.v11.suo
+*.suo
