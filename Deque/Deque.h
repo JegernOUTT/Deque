@@ -84,19 +84,22 @@ Deque<T1> & Deque<T1>::operator=(const Deque<T1> & deque)
 template <class T1>
 T1 & Deque<T1>::operator[](const int num)
 {
-	if (num < elementCount)
-		return **(back + num);
+	if (num < elementCount && num >= 0)
+		return ** (back + num);
 	else 
 	{
-		new T1(-1);
+		return * (new T1(-1));
 	}
 }
 
 template <class T1>
 bool_t Deque<T1>::isEmpty()
 {
-	if (head == back && elementCount == 0)
+	if (elementCount == 0)
+	{
+		stabilize();
 		return true_t;
+	}
 	else
 		return false_t;
 }
@@ -104,6 +107,8 @@ bool_t Deque<T1>::isEmpty()
 template <class T1>
 int Deque<T1>::push_back(T1 * const element)  
 {
+	isEmpty();
+
 	if ((back - 1) >= memAlloc)
 	{
 		back -= 1;
@@ -120,6 +125,8 @@ int Deque<T1>::push_back(T1 * const element)
 template <class T1>
 int Deque<T1>::push_front(T1 * const element)  
 {
+	isEmpty();
+
 	T1 ** addr = memAlloc;
 	addr += maxElementCount * 2;
 	
@@ -129,6 +136,7 @@ int Deque<T1>::push_front(T1 * const element)
 		head += 1;
 		++elementCount;
 		return 0;
+
 	}
 	else
 	{
@@ -139,16 +147,18 @@ int Deque<T1>::push_front(T1 * const element)
 template <class T1>
 T1 & Deque<T1>::pop_back()
 {
+
 	if (!isEmpty())
 	{
 		if (back != head)
 			back += 1;
 		--elementCount;
-		return **(back - 1);
+		T1 & returnVal = **(back - 1);
+		*(back - 1) = NULL;
+		return returnVal;
 	}
 	else 
 	{
-		stabilize();
 		return * (new T1(POP_ERROR));
 	}
 }
@@ -160,11 +170,12 @@ T1 & Deque<T1>::pop_front()
 	{
 		head -= 1;
 		--elementCount;
-		return **head;
+		T1 & returnVal = **head;
+		*head = NULL;
+		return returnVal;
 	}
 	else 
 	{
-		stabilize();
 		return * (new T1(POP_ERROR));
 	}
 }
@@ -196,9 +207,10 @@ long Deque<T1>::getMaxElementCount()
 template <class T1>
 int Deque<T1>::clearDeque_unsafe()
 {
-	for (int i = 0; i < elementCount * 2; ++i)
+	for (int i = 0; i < elementCount; ++i)
 	{
-		delete *(memAlloc + i);
+		delete * (memAlloc + i);
+		* (memAlloc + i) = NULL;
 	}
 	
 	elementCount = 0;

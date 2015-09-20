@@ -6,7 +6,11 @@ using namespace std;
 
 int main()
 {
-	TestDeque<TestClass> testDeque;
+	while (true)
+	{
+		system("cls");
+		TestDeque<TestClass> testDeque;
+	}
 
 	getchar();
 }

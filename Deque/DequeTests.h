@@ -4,6 +4,7 @@
 #include "Deque.h"
 #include <list>
 #include <iostream>
+#include <array>
 
 #define ELEMENTS_COUNT 100000
 
@@ -11,19 +12,20 @@ class TestClass
 {
 public:
 	int value;
-	static std::list<std::string> state;
-	TestClass(int a)						{state.push_back("Constructor")	; value = a;}
-	~TestClass()							{state.push_back("Destructor")		;}
-	TestClass(TestClass &)					{state.push_back("Copy constructor");}
-	TestClass & operator=(TestClass &)		{state.push_back("Operator =")		;	return * this;}
+	//static std::list<std::string> state;
+	TestClass(int a)						{/*state.push_back("Constructor")	;*/ value = a;}
+	~TestClass()							{/*state.push_back("Destructor");*/}		
+	TestClass(TestClass &)					{/*state.push_back("Copy constructor");*/}
+	TestClass & operator=(TestClass &)		{/*state.push_back("Operator =")		;*/	return * this;}
 };
-std::list<std::string> TestClass::state;
+//std::list<std::string> TestClass::state;
 
 template <class T1>
 class TestDeque
 {
 private:
 	Deque<T1> deque;
+	std::array<TestClass *, ELEMENTS_COUNT> pointersArray;
 
 private:
 	bool popBackTest();
@@ -54,8 +56,13 @@ public:
 
 template<class T1>
 TestDeque<T1>::TestDeque() : 
-	deque(ELEMENTS_COUNT)
+	deque(ELEMENTS_COUNT), pointersArray()
 {
+ 	for (int i = 0; i < ELEMENTS_COUNT; ++i)
+	{
+		pointersArray[i] = new TestClass(i);
+	}
+
 	std::cout << "1: test passed. 0: test not passed" << endl << endl;
 
 	std::cout << "pushBackTest:\t\t"					<< pushBackTest()							<< std::endl;
@@ -83,7 +90,10 @@ TestDeque<T1>::TestDeque() :
 template<class T1>
 TestDeque<T1>::~TestDeque(void)
 {
-
+ 	for (int i = 0; i < ELEMENTS_COUNT; ++i)
+	{
+		delete pointersArray[i];
+	}
 };
 
 template<class T1>
@@ -92,7 +102,7 @@ bool TestDeque<T1>::popBackTest()
 	T1 * popBackValue = NULL;
 	try
 	{
-		for (int i = 1; i <= ELEMENTS_COUNT; ++i)
+		for (int i = 0; i < ELEMENTS_COUNT; ++i)
 		{
 			popBackValue	= & (deque.pop_back());
 
@@ -108,8 +118,6 @@ bool TestDeque<T1>::popBackTest()
 			{
 				throw exception("NULL value from pop_back");
 			}
-
-			delete popBackValue;
 		}
 
 		if (!deque.isEmpty())
@@ -130,14 +138,14 @@ bool TestDeque<T1>::popFrontTest()
 	T1 * popFrontValue = NULL;
 	try
 	{
-		for (int i = 1; i <= ELEMENTS_COUNT; ++i)
+		for (int i = 0; i < ELEMENTS_COUNT; ++i)
 		{
 			popFrontValue = & (deque.pop_front());
 
 			if (popFrontValue != NULL)
 			{
 				TestClass * popFrontTestClass = reinterpret_cast<TestClass *>(popFrontValue);
-				if (popFrontTestClass->value != (ELEMENTS_COUNT - i))
+				if (popFrontTestClass->value != (ELEMENTS_COUNT - (i + 1)))
 				{
 					throw exception("Invalid value from pop_front");
 				}
@@ -146,8 +154,6 @@ bool TestDeque<T1>::popFrontTest()
 			{
 				throw exception("NULL value from pop_front");
 			}
-
-			delete popFrontValue;
 		}
 
 		if (!deque.isEmpty())
@@ -168,7 +174,7 @@ bool TestDeque<T1>::popBackFrontTest()
 	T1 * popBackValue = NULL, * popFrontValue = NULL;
 	try
 	{
-		for (int i = 1; i <= ELEMENTS_COUNT; ++i)
+		for (int i = 0; i < ELEMENTS_COUNT; ++i)
 		{
 			popBackValue =	& (deque.pop_back());
 			popFrontValue = & (deque.pop_front());
@@ -186,9 +192,6 @@ bool TestDeque<T1>::popBackFrontTest()
 			{
 				throw exception("NULL value from pop_back or pop_front");
 			}
-			
-			delete popBackValue;
-			delete popFrontValue;
 		}
 
 		if (!deque.isEmpty())
@@ -214,7 +217,7 @@ bool TestDeque<T1>::pushBackTest()
 	{
 		for (int i = 0; i < ELEMENTS_COUNT; ++i)
 		{
-			err = deque.push_back(new TestClass(ELEMENTS_COUNT - i));
+			err = deque.push_back(pointersArray[ELEMENTS_COUNT - (i + 1)]);
 			if (err)
 				throw exception("Cannot push front");
 		}
@@ -235,7 +238,7 @@ bool TestDeque<T1>::pushFrontTest()
 	{
 		for (int i = 0; i < ELEMENTS_COUNT; ++i)
 		{
-			err = deque.push_front(new TestClass(i));
+			err = deque.push_front(pointersArray[i]);
 			if (err)
 				throw exception("Cannot push front");
 		}
@@ -256,10 +259,10 @@ bool TestDeque<T1>::pushBackFrontTest()
 	{
 		for (int i = 0; i < ELEMENTS_COUNT; ++i)
 		{
-			err = deque.push_front(new TestClass(i));
+			err = deque.push_front(pointersArray[i]);
 			if (err)
 				throw exception("Cannot push front");
-			err = deque.push_back(new TestClass(ELEMENTS_COUNT - i));
+			err = deque.push_back(pointersArray[ELEMENTS_COUNT - (i + 1)]);
 			if (err)
 				throw exception("Cannot push front");
 		}
@@ -281,12 +284,12 @@ bool TestDeque<T1>::pushBackOverflow()
 	{
 		for (int i = 0; i < ELEMENTS_COUNT; ++i)
 		{
-			err = deque.push_back(new TestClass(ELEMENTS_COUNT - i));
+			err = deque.push_back(pointersArray[ELEMENTS_COUNT - (i + 1)]);
 			if (err)
 				throw exception("Cannot push front");
 		}
 
-		err = deque.push_back(new TestClass(0));
+		err = deque.push_back(pointersArray[0]);
 		if (err != -1)
 			throw exception("Push Back Overflow. Heap corrupted");
 	}
@@ -306,12 +309,12 @@ bool TestDeque<T1>::pushFrontOverflow()
 	{
 		for (int i = 0; i < ELEMENTS_COUNT; ++i)
 		{
-			err = deque.push_front(new TestClass(i));
+			err = deque.push_front(pointersArray[i]);
 			if (err)
 				throw exception("Cannot push front");
 		}
 
-		err = deque.push_front(new TestClass(ELEMENTS_COUNT));
+		err = deque.push_front(pointersArray[0]);
 		if (err != -1)
 			throw exception("Push Back Overflow. Heap corrupted");
 	}
@@ -331,7 +334,7 @@ bool TestDeque<T1>::popBackOverflow()
 	{
 		for (int i = 0; i < ELEMENTS_COUNT * 2; ++i)
 		{
-			delete & (deque.pop_back());
+			deque.pop_back();
 		}
 
 		if (!deque.isEmpty())
@@ -362,7 +365,7 @@ bool TestDeque<T1>::popFrontOverflow()
 	{
 		for (int i = 0; i < ELEMENTS_COUNT * 2; ++i)
 		{
-			delete & (deque.pop_back());
+			deque.pop_back();
 		}
 
 		if (!deque.isEmpty())
@@ -399,21 +402,122 @@ bool TestDeque<T1>::pushBackFrontPopBackFrontManyTimes()
 template<class T1>
 bool TestDeque<T1>::getElementsViaOperator()
 {
+	try
+	{
+		pushBackFrontTest();
+
+		for (int i = 0; i < ELEMENTS_COUNT; ++i)
+		{
+			TestClass & testClass = deque[i];
+			if (testClass.value != i)
+				throw exception ("Invalid element from back of deque");
+		}
+
+		for (int i = 0; i < ELEMENTS_COUNT; ++i)
+		{
+			TestClass & testClass = deque[ELEMENTS_COUNT + i];
+			if (testClass.value != i)
+				throw exception ("Invalid element from front of deque");
+		}
+
+		if (deque.getElementCount() != ELEMENTS_COUNT * 2)
+			throw exception ("Invalid element count in array");
+
+		TestClass & back = deque[-1];
+		TestClass & front = deque[(ELEMENTS_COUNT * 2) + 1];
+		if (back.value != -1)
+			throw exception ("Getting element from back overflow");
+		if (front.value != -1)
+			throw exception ("Getting element from front overflow");
+	}
+	catch (exception & ex)
+	{
+		cout << ex.what() << endl;
+		return false;
+	}
+
 	return true;
 }
 template<class T1>
 bool TestDeque<T1>::isEmptyCheck()
-{
+{	
+	try
+	{
+		for (int i = 0; i < ELEMENTS_COUNT * 2; ++i)
+		{
+			deque.pop_back();
+		}
+		if (!deque.isEmpty())
+			throw exception ("Array after pop back is not empty");
+
+		pushBackFrontTest();
+
+		for (int i = 0; i < ELEMENTS_COUNT * 2; ++i)
+		{
+			deque.pop_front();
+		}
+		if (!deque.isEmpty())
+			throw exception ("Array after pop front is not empty");
+	}
+	catch (exception & ex)
+	{
+		cout << ex.what() << endl;
+		return false;
+	}
+
 	return true;
 }
 template<class T1>
 bool TestDeque<T1>::elementCountCheck()
 {
+	try
+	{
+		pushBackFrontTest();
+		for (int i = 0; i < ELEMENTS_COUNT * 2; ++i)
+		{
+			deque.pop_back();
+			if (deque.getElementCount() != (ELEMENTS_COUNT * 2) - (i + 1))
+				throw exception ("Invalid element count after pop back");
+		}
+
+		pushBackFrontTest();
+		for (int i = 0; i < ELEMENTS_COUNT * 2; ++i)
+		{
+			deque.pop_front();
+			if (deque.getElementCount() != (ELEMENTS_COUNT * 2) - (i + 1))
+				throw exception ("Invalid element count after pop front");
+		}
+	}
+	catch (exception & ex)
+	{
+		cout << ex.what() << endl;
+		return false;
+	}
+
 	return true;
 }
 template<class T1>
 bool TestDeque<T1>::clearDequeCheck_unsafe()
 {
+	try
+	{
+		pushBackTest();
+		deque.clearDeque_unsafe();
+	 	for (int i = 0; i < ELEMENTS_COUNT; ++i)
+		{
+			pointersArray[i] = new TestClass(i);
+		}
+
+		getElementsViaOperator();
+		isEmptyCheck();
+		elementCountCheck();
+	}
+	catch (exception & ex)
+	{
+		cout << ex.what() << endl;
+		return false;
+	}
+
 	return true;
 }
 
